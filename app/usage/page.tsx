@@ -9,7 +9,9 @@ import {
   Search, 
   Globe,
   TrendingUp,
-  Calendar
+  Calendar,
+  Music,
+  User
 } from "lucide-react";
 
 interface ApiUsage {
@@ -33,13 +35,22 @@ const usageData: ApiUsage[] = [
     color: "bg-emerald-500"
   },
   {
+    service: "Gemini (Nano Banana)",
+    today: 3,
+    month: 3,
+    unit: "images",
+    cost: 0,
+    icon: <Image className="w-5 h-5" />,
+    color: "bg-purple-500"
+  },
+  {
     service: "fal.ai (Images)",
     today: 0,
     month: 0,
     unit: "images",
     cost: 0,
     icon: <Image className="w-5 h-5" />,
-    color: "bg-purple-500"
+    color: "bg-indigo-500"
   },
   {
     service: "fal.ai (Video)",
@@ -52,12 +63,39 @@ const usageData: ApiUsage[] = [
   },
   {
     service: "ElevenLabs",
-    today: 0,
-    month: 0,
-    unit: "characters",
-    cost: 0,
+    today: 1,
+    month: 1,
+    unit: "voices",
+    cost: 0.03,
     icon: <Mic className="w-5 h-5" />,
     color: "bg-blue-500"
+  },
+  {
+    service: "HeyGen",
+    today: 0,
+    month: 0,
+    unit: "videos",
+    cost: 0,
+    icon: <User className="w-5 h-5" />,
+    color: "bg-orange-500"
+  },
+  {
+    service: "Runway",
+    today: 0,
+    month: 0,
+    unit: "videos",
+    cost: 0,
+    icon: <Video className="w-5 h-5" />,
+    color: "bg-red-500"
+  },
+  {
+    service: "Suno",
+    today: 0,
+    month: 0,
+    unit: "tracks",
+    cost: 0,
+    icon: <Music className="w-5 h-5" />,
+    color: "bg-green-500"
   },
   {
     service: "Exa MCP",
