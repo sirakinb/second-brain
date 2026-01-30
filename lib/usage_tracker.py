@@ -219,6 +219,18 @@ def log_suno_music(duration: int):
         metadata={"duration_seconds": duration}
     )
 
+def log_kimi_k25(tokens: int, operation: str = "chat_completion"):
+    """Log Kimi K2.5 model usage (Moonshot AI)"""
+    # Kimi K2.5 pricing: ~$0.50 per 1M tokens (input + output avg)
+    cost = (tokens / 1000000) * 0.50
+    
+    return tracker.log_usage(
+        service="Kimi K2.5",
+        operation=operation,
+        cost=cost,
+        metadata={"model": "kimi-k2.5", "tokens": tokens}
+    )
+
 # Export functions
 __all__ = [
     'tracker',
@@ -231,5 +243,6 @@ __all__ = [
     'log_gemini_image',
     'log_heygen_video',
     'log_runway_video',
-    'log_suno_music'
+    'log_suno_music',
+    'log_kimi_k25'
 ]
