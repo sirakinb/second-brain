@@ -28,6 +28,15 @@ interface SystemNode {
 
 const systemNodes: SystemNode[] = [
   {
+    id: "kimi",
+    name: "Kimi K2.5",
+    description: "Moonshot AI model - the core reasoning engine (me!)",
+    status: "active",
+    path: "moonshot.cn/kimi-k2.5",
+    icon: <Brain className="w-5 h-5" />,
+    connections: ["gateway", "tools", "memory"]
+  },
+  {
     id: "soul",
     name: "SOUL.md",
     description: "Core personality, values, and behavioral principles",
@@ -273,9 +282,26 @@ export default function ArchitecturePage() {
 
       {/* Architecture Grid */}
       <div className="grid grid-cols-12 gap-6">
-        {/* Left Column - Identity & Memory */}
+        {/* Left Column - AI Brain & Identity */}
         <div className="col-span-3 space-y-4">
           <h2 className="text-lg font-semibold text-slate-300 flex items-center gap-2">
+            <Brain className="w-5 h-5 text-rose-400" />
+            AI Brain
+          </h2>
+          <div className="space-y-3">
+            {systemNodes
+              .filter(n => ["kimi"].includes(n.id))
+              .map(node => (
+                <NodeCard
+                  key={node.id}
+                  node={node}
+                  isSelected={selectedNode === node.id}
+                  onClick={() => setSelectedNode(node.id)}
+                />
+              ))}
+          </div>
+
+          <h2 className="text-lg font-semibold text-slate-300 flex items-center gap-2 mt-8">
             <Brain className="w-5 h-5 text-purple-400" />
             Core Identity
           </h2>
