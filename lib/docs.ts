@@ -5,7 +5,7 @@ import type { DocFrontmatter, DocTreeNode } from "@/lib/types";
 
 export const DOCS_ROOT = path.resolve(
   process.cwd(),
-  "../../../second-brain-docs",
+  "documents",
 );
 
 const MARKDOWN_EXTS = new Set([".md", ".mdx"]);
