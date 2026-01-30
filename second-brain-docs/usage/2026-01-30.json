@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "timestamp": "2026-01-30T03:18:53.149834",
+      "service": "Gemini (Nano Banana)",
+      "operation": "image_generation",
+      "cost_usd": 0.0,
+      "metadata": {
+        "model": "gemini-2.5-flash-image",
+        "prompt_length": 30
+      }
+    },
+    {
+      "timestamp": "2026-01-30T03:18:53.152974",
+      "service": "Gemini (Nano Banana)",
+      "operation": "image_generation",
+      "cost_usd": 0.0,
+      "metadata": {
+        "model": "gemini-2.5-flash-image",
+        "prompt_length": 30
+      }
+    },
+    {
+      "timestamp": "2026-01-30T03:18:53.158505",
+      "service": "Gemini (Nano Banana)",
+      "operation": "image_generation",
+      "cost_usd": 0.0,
+      "metadata": {
+        "model": "gemini-2.5-flash-image",
+        "prompt_length": 30
+      }
+    },
+    {
+      "timestamp": "2026-01-30T03:18:53.165847",
+      "service": "ElevenLabs",
+      "operation": "text_to_speech",
+      "cost_usd": 0.027,
+      "metadata": {
+        "characters": 90
+      }
+    }
+  ],
+  "daily_total": 0.027
+}
