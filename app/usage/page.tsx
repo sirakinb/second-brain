@@ -14,7 +14,8 @@ import {
   Zap,
   Activity,
   PieChart,
-  ArrowUpRight
+  ArrowUpRight,
+  Brain
 } from "lucide-react";
 
 interface ApiUsage {
@@ -29,6 +30,16 @@ interface ApiUsage {
 }
 
 const usageData: ApiUsage[] = [
+  {
+    service: "Kimi K2.5",
+    today: 1,
+    month: 1,
+    unit: "sessions",
+    cost: 0.15,
+    icon: <Brain className="w-5 h-5" />,
+    color: "from-rose-500 to-rose-600",
+    trend: "up"
+  },
   {
     service: "OpenAI",
     today: 0,
