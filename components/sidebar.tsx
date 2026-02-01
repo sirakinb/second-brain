@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRight, FileText, Folder, FolderOpen, Plus, PanelLeftClose, PanelLeft } from "lucide-react";
+import { ChevronRight, Clock, FileText, Folder, FolderOpen, Plus, PanelLeftClose, PanelLeft } from "lucide-react";
 import Link from "next/link";
 import type { DocTreeNode } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -199,6 +199,13 @@ export default function Sidebar({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 Config
+              </Link>
+              <Link
+                href="/cron"
+                className="flex items-center gap-2 px-2 py-1.5 text-[13px] text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02] rounded-md transition-all"
+              >
+                <Clock className="h-3.5 w-3.5 text-zinc-500" />
+                Cron Jobs
               </Link>
             </nav>
           </div>
