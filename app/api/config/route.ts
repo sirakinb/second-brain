@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-const WORKSPACE_PATH = '/Users/adzoboateng/clawd';
-
 const CONFIG_FILES = [
   {
     name: 'SOUL.md',
@@ -45,7 +43,7 @@ const CONFIG_FILES = [
 export async function GET() {
   try {
     const files = CONFIG_FILES.map(file => {
-      const filePath = path.join(WORKSPACE_PATH, file.path);
+      const filePath = path.join(process.cwd(), 'public', 'config', file.path);
       
       try {
         const content = fs.readFileSync(filePath, 'utf-8');
@@ -59,6 +57,7 @@ export async function GET() {
           words
         };
       } catch (error) {
+        console.error(`Error reading ${file.name}:`, error);
         return {
           ...file,
           content: '(File not found or empty)',
