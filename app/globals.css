@@ -404,7 +404,8 @@
   }
 
   .markdown ol {
-    @apply mt-4 space-y-2 pl-0 text-[#9D9BA8] list-none counter-reset-[item];
+    @apply mt-4 space-y-2 pl-0 text-[#9D9BA8] list-none;
+    counter-reset: item;
   }
 
   .markdown ol li {
