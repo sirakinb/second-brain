@@ -268,6 +268,13 @@ export default function ArchitecturePage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <a
+              href="/config"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-700/50 hover:bg-slate-700 border border-slate-600 transition-colors"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="text-sm">View Config Files</span>
+            </a>
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-sm text-emerald-400">System Online</span>
