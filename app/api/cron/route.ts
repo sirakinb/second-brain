@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const GATEWAY_URL = "http://127.0.0.1:18789";
+const GATEWAY_TOKEN = "dfb92834b59be8360f0b3143b21d8843af7ea8341ae47d850b1c4b29aa01525b";
 
 export async function GET() {
   try {
@@ -9,6 +10,7 @@ export async function GET() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${GATEWAY_TOKEN}`,
       },
       body: JSON.stringify({
         tool: "cron",
