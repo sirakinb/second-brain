@@ -4,9 +4,10 @@ import remarkGfm from "remark-gfm";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { slug?: string[] } },
+  { params }: { params: Promise<{ slug?: string[] }> },
 ) {
-  const slug = params.slug ?? [];
+  const { slug: slugParam } = await params;
+  const slug = slugParam ?? [];
   const relativePath = slug.map((segment) => decodeURIComponent(segment)).join("/");
 
   try {

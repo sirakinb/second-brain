@@ -1,393 +1,390 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { 
-  DollarSign, 
-  Image, 
-  Video, 
-  Mic, 
-  Search, 
-  Globe,
-  TrendingUp,
-  Music,
-  User,
-  Zap,
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import {
   Activity,
-  PieChart,
-  ArrowUpRight,
-  Brain
+  ArrowLeft,
+  BarChart3,
+  Clock,
+  Flame,
+  RefreshCcw,
+  Layers,
 } from "lucide-react";
 
-interface ApiUsage {
-  service: string;
-  today: number;
-  month: number;
-  unit: string;
-  cost: number;
-  icon: React.ReactNode;
-  color: string;
-  trend: "up" | "down" | "stable";
+type TokentapEntry = {
+  id: string;
+  timestampIso: string;
+  dateKey: string;
+  provider: string;
+  model: string;
+  tokens: number;
+  promptPreview: string;
+  fileName: string;
+};
+
+type TokentapSummary = {
+  totalTokens: number;
+  totalRequests: number;
+  activeDays: number;
+  providers: Array<{
+    provider: string;
+    tokens: number;
+    requests: number;
+  }>;
+  days: Array<{
+    date: string;
+    tokens: number;
+    requests: number;
+  }>;
+  recent: TokentapEntry[];
+  firstSeenIso: string | null;
+  lastSeenIso: string | null;
+};
+
+type TokentapResponse = {
+  promptsDir: string;
+  entries: TokentapEntry[];
+  summary: TokentapSummary;
+  error: string | null;
+};
+
+const providerStyles: Record<string, { border: string; bg: string; text: string }> = {
+  openai: {
+    border: "border-[#00d4ff]/20",
+    bg: "bg-[#00d4ff]/10",
+    text: "text-[#00d4ff]",
+  },
+  anthropic: {
+    border: "border-[#8b5cf6]/20",
+    bg: "bg-[#8b5cf6]/10",
+    text: "text-[#8b5cf6]",
+  },
+  gemini: {
+    border: "border-amber-400/20",
+    bg: "bg-amber-400/10",
+    text: "text-amber-400",
+  },
+  unknown: {
+    border: "border-white/[0.08]",
+    bg: "bg-white/[0.04]",
+    text: "text-zinc-300",
+  },
+};
+
+function formatNumber(value: number) {
+  return value.toLocaleString();
 }
 
-const usageData: ApiUsage[] = [
-  {
-    service: "Kimi K2.5",
-    today: 1,
-    month: 1,
-    unit: "sessions",
-    cost: 0.15,
-    icon: <Brain className="w-5 h-5" />,
-    color: "from-rose-500 to-rose-600",
-    trend: "up"
-  },
-  {
-    service: "OpenAI",
-    today: 0,
-    month: 0,
-    unit: "tokens",
-    cost: 0,
-    icon: <DollarSign className="w-5 h-5" />,
-    color: "from-emerald-500 to-emerald-600",
-    trend: "stable"
-  },
-  {
-    service: "Gemini (Nano Banana)",
-    today: 3,
-    month: 3,
-    unit: "images",
-    cost: 0,
-    icon: <Image className="w-5 h-5" />,
-    color: "from-violet-500 to-violet-600",
-    trend: "up"
-  },
-  {
-    service: "fal.ai (Images)",
-    today: 0,
-    month: 0,
-    unit: "images",
-    cost: 0,
-    icon: <Image className="w-5 h-5" />,
-    color: "from-indigo-500 to-indigo-600",
-    trend: "stable"
-  },
-  {
-    service: "fal.ai (Video)",
-    today: 0,
-    month: 0,
-    unit: "videos",
-    cost: 0,
-    icon: <Video className="w-5 h-5" />,
-    color: "from-pink-500 to-pink-600",
-    trend: "stable"
-  },
-  {
-    service: "ElevenLabs",
-    today: 1,
-    month: 1,
-    unit: "voices",
-    cost: 0.03,
-    icon: <Mic className="w-5 h-5" />,
-    color: "from-blue-500 to-blue-600",
-    trend: "up"
-  },
-  {
-    service: "HeyGen",
-    today: 0,
-    month: 0,
-    unit: "videos",
-    cost: 0,
-    icon: <User className="w-5 h-5" />,
-    color: "from-orange-500 to-orange-600",
-    trend: "stable"
-  },
-  {
-    service: "Runway",
-    today: 0,
-    month: 0,
-    unit: "videos",
-    cost: 0,
-    icon: <Video className="w-5 h-5" />,
-    color: "from-red-500 to-red-600",
-    trend: "stable"
-  },
-  {
-    service: "Suno",
-    today: 0,
-    month: 0,
-    unit: "tracks",
-    cost: 0,
-    icon: <Music className="w-5 h-5" />,
-    color: "from-green-500 to-green-600",
-    trend: "stable"
-  },
-  {
-    service: "Exa MCP",
-    today: 0,
-    month: 0,
-    unit: "searches",
-    cost: 0,
-    icon: <Search className="w-5 h-5" />,
-    color: "from-cyan-500 to-cyan-600",
-    trend: "stable"
-  },
-  {
-    service: "Browser-Use",
-    today: 0,
-    month: 0,
-    unit: "sessions",
-    cost: 0,
-    icon: <Globe className="w-5 h-5" />,
-    color: "from-amber-500 to-amber-600",
-    trend: "stable"
-  }
-];
+function formatDateTime(value: string | null) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
-export default function UsageDashboard() {
-  const [currentTime, setCurrentTime] = useState<string>("");
-  const totalCost = usageData.reduce((sum, item) => sum + item.cost, 0);
-  const activeServices = usageData.filter(item => item.today > 0).length;
+function formatDayLabel(dayKey: string) {
+  const date = new Date(`${dayKey}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return dayKey;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "2-digit",
+  });
+}
+
+function getProviderStyle(provider: string) {
+  return providerStyles[provider] ?? providerStyles.unknown;
+}
+
+export default function UsagePage() {
+  const [data, setData] = useState<TokentapResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  const fetchData = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    try {
+      const response = await fetch("/api/usage/tokentap", { cache: "no-store" });
+      const payload = (await response.json()) as TokentapResponse;
+      setData(payload);
+      setError(payload.error);
+      setLastUpdated(new Date().toISOString());
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unable to load data.";
+      setError(message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const updateTime = () => {
-      setCurrentTime(new Date().toLocaleString("en-US", {
-        timeZone: "America/New_York",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      }));
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 60000);
-    return () => clearInterval(interval);
+    fetchData();
   }, []);
 
+  const summary = data?.summary;
+  const isEmpty = !summary || summary.totalRequests === 0;
+  const recent = summary?.recent ?? [];
+  const days = summary?.days ?? [];
+  const providers = summary?.providers ?? [];
+  const dayMax = useMemo(
+    () => Math.max(0, ...days.map((day) => day.tokens)),
+    [days],
+  );
+
+  const statusLabel = summary?.lastSeenIso ? "Capturing" : "Idle";
+  const statusTone = summary?.lastSeenIso ? "text-emerald-400" : "text-zinc-400";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-200">
-      {/* Animated background */}
+    <div className="min-h-screen bg-[#0a0a0b] text-white">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-1/3 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute -top-24 right-1/4 h-[420px] w-[420px] rounded-full bg-[#00d4ff]/[0.04] blur-[120px]" />
+        <div className="absolute bottom-0 left-1/4 h-[520px] w-[520px] rounded-full bg-[#8b5cf6]/[0.04] blur-[140px]" />
+        <div className="absolute top-1/3 left-1/2 h-[460px] w-[460px] -translate-x-1/2 rounded-full bg-emerald-500/[0.03] blur-[140px]" />
       </div>
 
-      <div className="relative z-10 p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                API Usage Analytics
-              </h1>
-              <p className="text-slate-400 mt-2 text-lg">
-                Real-time cost tracking across all AI services • {currentTime} EST
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="px-6 py-4 rounded-2xl bg-slate-900/50 border border-slate-700/50 backdrop-blur-sm">
-                <div className="text-sm text-slate-400 mb-1">Total This Month</div>
-                <div className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                  ${totalCost.toFixed(2)}
+      <div className="relative z-10">
+        <header className="border-b border-white/[0.04]">
+          <div className="mx-auto max-w-[1600px] px-8 py-6">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-6">
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 text-zinc-400 transition-colors hover:text-white"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="text-sm">Back</span>
+                </Link>
+                <div className="h-6 w-px bg-white/[0.06]" />
+                <div>
+                  <h1 className="text-2xl font-semibold tracking-tight">
+                    Token Usage History
+                  </h1>
+                  <p className="text-sm text-zinc-500 mt-1">
+                    Historical capture from tokentap
+                  </p>
                 </div>
               </div>
-              <div className="px-6 py-4 rounded-2xl bg-slate-900/50 border border-slate-700/50 backdrop-blur-sm">
-                <div className="text-sm text-slate-400 mb-1">Active Services</div>
-                <div className="text-3xl font-bold text-cyan-400">{activeServices}</div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2">
+                  <Activity className={`h-4 w-4 ${statusTone}`} />
+                  <span className={`text-sm ${statusTone}`}>{statusLabel}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fetchData(true)}
+                  className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-sm text-zinc-300 transition-colors hover:border-white/[0.18] hover:text-white"
+                >
+                  <RefreshCcw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+                  Refresh
+                </button>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-700/50 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-emerald-500/20">
-                <Zap className="w-5 h-5 text-emerald-400" />
-              </div>
-              <span className="text-slate-400 text-sm">API Calls Today</span>
-            </div>
-            <div className="text-2xl font-bold text-emerald-400">
-              {usageData.reduce((sum, item) => sum + item.today, 0)}
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+              <span>Prompts dir: {data?.promptsDir ?? "~/.tokentap/prompts"}</span>
+              <span>Last updated: {formatDateTime(lastUpdated)}</span>
             </div>
           </div>
-          <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-700/50 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-blue-500/20">
-                <Activity className="w-5 h-5 text-blue-400" />
-              </div>
-              <span className="text-slate-400 text-sm">Most Used</span>
-            </div>
-            <div className="text-2xl font-bold text-blue-400 truncate">
-              {usageData.sort((a, b) => b.month - a.month)[0]?.service.split(" ")[0]}
-            </div>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-700/50 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-purple-500/20">
-                <TrendingUp className="w-5 h-5 text-purple-400" />
-              </div>
-              <span className="text-slate-400 text-sm">Avg Cost/Call</span>
-            </div>
-            <div className="text-2xl font-bold text-purple-400">
-              ${totalCost > 0 ? (totalCost / Math.max(1, usageData.reduce((s, i) => s + i.month, 0))).toFixed(3) : "0.00"}
-            </div>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-700/50 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-amber-500/20">
-                <PieChart className="w-5 h-5 text-amber-400" />
-              </div>
-              <span className="text-slate-400 text-sm">Free Tier Used</span>
-            </div>
-            <div className="text-2xl font-bold text-amber-400">
-              {usageData.filter(i => i.cost === 0 && i.today > 0).length}
-            </div>
-          </div>
-        </div>
+        </header>
 
-        {/* Usage Cards Grid */}
-        <div className="grid grid-cols-5 gap-4 mb-8">
-          {usageData.map((api) => (
-            <div 
-              key={api.service}
-              className="p-5 rounded-2xl bg-slate-900/50 border border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/50 transition-all group cursor-pointer"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${api.color} bg-opacity-20`}>
-                    {api.icon}
-                  </div>
+        <main className="mx-auto max-w-[1600px] px-8 py-8">
+          {error ? (
+            <div className="mb-6 rounded-xl border border-amber-400/20 bg-amber-400/5 px-5 py-4 text-sm text-amber-200">
+              {error.includes("no such file") || error.includes("ENOENT") ? (
+                <div>
+                  No tokentap history found yet. Start tokentap, run your tool
+                  through it, then refresh.
                 </div>
-                <div className="flex items-center gap-1">
-                  {api.trend === "up" && <ArrowUpRight className="w-4 h-4 text-emerald-400" />}
-                </div>
-              </div>
-              
-              <h3 className="font-semibold text-slate-200 mb-1 group-hover:text-cyan-400 transition-colors">
-                {api.service}
-              </h3>
-              
-              <div className="text-2xl font-bold text-slate-300 mb-3">
-                ${api.cost.toFixed(2)}
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Today:</span>
-                  <span className="text-slate-300 font-medium">{api.today} {api.unit}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Month:</span>
-                  <span className="text-slate-300 font-medium">{api.month} {api.unit}</span>
-                </div>
-              </div>
-              
-              <div className="mt-4 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                <div 
-                  className={`h-full bg-gradient-to-r ${api.color} transition-all`}
-                  style={{ width: `${Math.min((api.month / 50) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Cost Breakdown & Insights */}
-        <div className="grid grid-cols-2 gap-6">
-          {/* Today's Activity */}
-          <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-700/50 backdrop-blur-sm">
-            <h2 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-cyan-400" />
-              Today's Activity
-            </h2>
-            <div className="space-y-3">
-              {usageData
-                .filter(api => api.today > 0)
-                .map(api => (
-                  <div key={api.service} className="flex items-center justify-between p-3 rounded-xl bg-slate-800/50">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg bg-gradient-to-br ${api.color}`}>
-                        {api.icon}
-                      </div>
-                      <span className="text-slate-300">{api.service}</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-slate-400">{api.today} {api.unit}</span>
-                      <span className="text-emerald-400 font-medium">${api.cost.toFixed(2)}</span>
-                    </div>
-                  </div>
-                ))}
-              {usageData.filter(api => api.today > 0).length === 0 && (
-                <p className="text-slate-500 text-center py-4">No activity today</p>
+              ) : (
+                <div>Unable to read tokentap data: {error}</div>
               )}
             </div>
+          ) : null}
+
+          <div className="grid gap-4 lg:grid-cols-4">
+            {[
+              {
+                label: "Total Tokens",
+                value: summary ? formatNumber(summary.totalTokens) : "--",
+                icon: Flame,
+                accent: "text-[#00d4ff]",
+              },
+              {
+                label: "Requests",
+                value: summary ? formatNumber(summary.totalRequests) : "--",
+                icon: Layers,
+                accent: "text-emerald-400",
+              },
+              {
+                label: "Active Days",
+                value: summary ? formatNumber(summary.activeDays) : "--",
+                icon: BarChart3,
+                accent: "text-violet-400",
+              },
+              {
+                label: "Last Seen",
+                value: formatDateTime(summary?.lastSeenIso ?? null),
+                icon: Clock,
+                accent: "text-amber-300",
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-white/[0.04] bg-white/[0.02] p-5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs uppercase tracking-[0.15em] text-zinc-500">
+                    {stat.label}
+                  </span>
+                  <stat.icon className={`h-4 w-4 ${stat.accent}`} />
+                </div>
+                <div className="mt-3 text-2xl font-semibold">{stat.value}</div>
+              </div>
+            ))}
           </div>
 
-          {/* Insights */}
-          <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-700/50 backdrop-blur-sm">
-            <h2 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-purple-400" />
-              Usage Insights
-            </h2>
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-800/50 border border-emerald-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span className="text-emerald-400 font-medium">Cost Optimization</span>
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            <section className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Provider Breakdown</h2>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Tokens and requests by provider
+                  </p>
                 </div>
-                <p className="text-sm text-slate-400">
-                  Using Gemini Nano Banana for images saves ~$0.03 per image vs DALL-E 3
-                </p>
               </div>
-              <div className="p-4 rounded-xl bg-slate-800/50 border border-amber-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-amber-400" />
-                  <span className="text-amber-400 font-medium">Free Tier Active</span>
-                </div>
-                <p className="text-sm text-slate-400">
-                  2 services on free tier today (Gemini, Exa MCP)
-                </p>
+              <div className="mt-6 space-y-3">
+                {providers.length === 0 ? (
+                  <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-4 text-sm text-zinc-500">
+                    No provider data yet.
+                  </div>
+                ) : (
+                  providers.map((provider) => {
+                    const style = getProviderStyle(provider.provider);
+                    return (
+                      <div
+                        key={provider.provider}
+                        className={`rounded-lg border ${style.border} ${style.bg} p-4`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-semibold capitalize">
+                            {provider.provider}
+                          </div>
+                          <div className={`text-xs ${style.text}`}>
+                            {formatNumber(provider.tokens)} tokens
+                          </div>
+                        </div>
+                        <div className="mt-2 text-xs text-zinc-400">
+                          {formatNumber(provider.requests)} requests
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
-              <div className="p-4 rounded-xl bg-slate-800/50 border border-blue-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-400" />
-                  <span className="text-blue-400 font-medium">Most Active</span>
+            </section>
+
+            <section className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Daily Usage</h2>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Last {Math.min(14, days.length)} days
+                  </p>
                 </div>
-                <p className="text-sm text-slate-400">
-                  Marketing content generation is today's primary driver
+              </div>
+              <div className="mt-6 space-y-3">
+                {days.length === 0 ? (
+                  <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-4 text-sm text-zinc-500">
+                    No daily usage data yet.
+                  </div>
+                ) : (
+                  days.slice(0, 14).map((day) => {
+                    const width = dayMax ? Math.round((day.tokens / dayMax) * 100) : 0;
+                    return (
+                      <div key={day.date} className="space-y-2">
+                        <div className="flex items-center justify-between text-xs text-zinc-400">
+                          <span>{formatDayLabel(day.date)}</span>
+                          <span>
+                            {formatNumber(day.tokens)} tokens • {formatNumber(day.requests)} req
+                          </span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-white/[0.06]">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#00d4ff] to-[#8b5cf6]"
+                            style={{ width: `${width}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </section>
+          </div>
+
+          <section className="mt-8 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Recent Prompts</h2>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Latest {recent.length} captured requests
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mt-8 p-6 rounded-2xl bg-slate-900/30 border border-slate-700/50">
-          <h2 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-cyan-400" />
-            Quick Actions
-          </h2>
-          <div className="flex gap-3">
-            <button className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors border border-slate-700">
-              Export Usage CSV
-            </button>
-            <button className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors border border-slate-700">
-              Set Budget Alerts
-            </button>
-            <button className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm text-slate-300 transition-colors border border-slate-700">
-              View Detailed Logs
-            </button>
-            <button className="px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-sm text-cyan-400 transition-colors border border-cyan-500/30">
-              Configure APIs
-            </button>
-          </div>
-        </div>
-
-        {/* Footer Note */}
-        <div className="mt-8 text-center text-sm text-slate-500">
-          <p>📊 Costs are estimates based on standard pricing tiers • Updated in real-time</p>
-          <p className="mt-1">💡 Set budget alerts to avoid unexpected charges</p>
-        </div>
+            <div className="mt-6 overflow-hidden rounded-xl border border-white/[0.06]">
+              <div className="grid grid-cols-[160px_100px_1fr_120px] gap-4 border-b border-white/[0.06] bg-white/[0.04] px-4 py-3 text-xs uppercase tracking-[0.2em] text-zinc-500">
+                <span>Timestamp</span>
+                <span>Provider</span>
+                <span>Prompt</span>
+                <span className="text-right">Tokens</span>
+              </div>
+              {loading ? (
+                <div className="px-4 py-6 text-sm text-zinc-500">Loading...</div>
+              ) : isEmpty ? (
+                <div className="px-4 py-6 text-sm text-zinc-500">
+                  No prompts captured yet.
+                </div>
+              ) : (
+                recent.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="grid grid-cols-[160px_100px_1fr_120px] gap-4 border-b border-white/[0.04] px-4 py-4 text-sm text-zinc-300 last:border-b-0"
+                  >
+                    <div className="text-xs text-zinc-500">
+                      {formatDateTime(entry.timestampIso)}
+                      <div className="mt-1 text-[10px] text-zinc-600">
+                        {entry.model}
+                      </div>
+                    </div>
+                    <div className="text-xs capitalize text-zinc-400">
+                      {entry.provider}
+                    </div>
+                    <div className="text-sm text-zinc-200">
+                      {entry.promptPreview || "No preview available."}
+                    </div>
+                    <div className="text-right text-xs text-zinc-400">
+                      {formatNumber(entry.tokens)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   );

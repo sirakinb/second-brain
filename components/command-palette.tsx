@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Command, FilePlus, FileText } from "lucide-react";
+import { Search, FilePlus, FileText, X } from "lucide-react";
 import type { DocTreeNode } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +21,7 @@ export default function CommandPalette({
   onCreate,
 }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -37,7 +38,10 @@ export default function CommandPalette({
   }, [isOpen, onOpenChange]);
 
   useEffect(() => {
-    if (!isOpen) setQuery("");
+    if (!isOpen) {
+      setQuery("");
+      setSelectedIndex(0);
+    }
   }, [isOpen]);
 
   const filtered = useMemo(() => {
@@ -48,55 +52,107 @@ export default function CommandPalette({
     );
   }, [items, query]);
 
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [filtered]);
+
   if (!isOpen) return null;
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.min(prev + 1, filtered.length));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedIndex === 0) {
+        onCreate(query.trim() || "Untitled");
+        onOpenChange(false);
+      } else if (filtered[selectedIndex - 1]) {
+        onSelect(filtered[selectedIndex - 1].path);
+        onOpenChange(false);
+      }
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 px-4 pt-24 backdrop-blur-sm">
-      <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl animate-in fade-in zoom-in-95">
-        <div className="flex items-center gap-3 border-b border-zinc-800 px-4 py-3 text-zinc-400">
-          <Command className="h-4 w-4" />
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={() => onOpenChange(false)}
+      />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-xl overflow-hidden rounded-xl border border-white/[0.06] bg-[#111113] shadow-2xl animate-scale-in">
+        {/* Search input */}
+        <div className="flex items-center gap-3 border-b border-white/[0.04] px-4 py-3">
+          <Search className="h-4 w-4 text-zinc-500" />
           <input
             autoFocus
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                const first = filtered[0];
-                if (first) {
-                  onSelect(first.path);
-                  onOpenChange(false);
-                } else if (query.trim()) {
-                  onCreate(query.trim());
-                  onOpenChange(false);
-                }
-              }
-            }}
-            placeholder="Search notes or create a new one..."
-            className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-600"
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Search documents or create new..."
+            className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-500"
           />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              className="p-1 rounded hover:bg-white/[0.04] text-zinc-500 hover:text-zinc-300"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <kbd className="rounded border border-white/[0.06] bg-white/[0.02] px-1.5 py-0.5 font-mono text-[10px] text-zinc-500">
+            ESC
+          </kbd>
         </div>
-        <div className="max-h-72 overflow-y-auto py-2">
+
+        {/* Results */}
+        <div className="max-h-[320px] overflow-y-auto py-2">
+          {/* Create new option */}
           <button
             type="button"
             onClick={() => {
-              const title = query.trim() || "Untitled";
-              onCreate(title);
+              onCreate(query.trim() || "Untitled");
               onOpenChange(false);
             }}
-            className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900"
+            className={cn(
+              "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors",
+              selectedIndex === 0 ? "bg-[#00d4ff]/10" : "hover:bg-white/[0.02]"
+            )}
           >
-            <FilePlus className="h-4 w-4 text-emerald-400" />
-            <span>Create “{query.trim() || "Untitled"}”</span>
+            <div className={cn(
+              "p-1.5 rounded-md",
+              selectedIndex === 0 ? "bg-[#00d4ff]/20 text-[#00d4ff]" : "bg-white/[0.04] text-zinc-500"
+            )}>
+              <FilePlus className="h-3.5 w-3.5" />
+            </div>
+            <span className={cn(
+              "text-sm",
+              selectedIndex === 0 ? "text-[#00d4ff]" : "text-zinc-300"
+            )}>
+              Create "{query.trim() || "Untitled"}"
+            </span>
           </button>
-          <div className="px-4 py-2 text-xs uppercase tracking-[0.2em] text-zinc-600">
-            Documents
+
+          {/* Divider */}
+          <div className="px-4 py-2">
+            <div className="text-[10px] font-medium uppercase tracking-[0.15em] text-zinc-600">
+              Documents
+            </div>
           </div>
+
+          {/* Document list */}
           {filtered.length === 0 ? (
-            <div className="px-4 py-6 text-sm text-zinc-500">
-              No matches found.
+            <div className="px-4 py-6 text-center text-sm text-zinc-500">
+              No documents found
             </div>
           ) : (
-            filtered.map((item) => (
+            filtered.map((item, index) => (
               <button
                 key={item.path}
                 type="button"
@@ -105,20 +161,42 @@ export default function CommandPalette({
                   onOpenChange(false);
                 }}
                 className={cn(
-                  "flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-900",
+                  "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors",
+                  selectedIndex === index + 1 ? "bg-[#00d4ff]/10" : "hover:bg-white/[0.02]"
                 )}
               >
-                <FileText className="h-4 w-4 text-zinc-500" />
-                <div className="flex flex-col">
-                  <span>{item.name}</span>
-                  <span className="text-xs text-zinc-500">{item.path}</span>
+                <div className={cn(
+                  "p-1.5 rounded-md",
+                  selectedIndex === index + 1 ? "bg-[#00d4ff]/20 text-[#00d4ff]" : "bg-white/[0.04] text-zinc-500"
+                )}>
+                  <FileText className="h-3.5 w-3.5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className={cn(
+                    "text-sm block truncate",
+                    selectedIndex === index + 1 ? "text-[#00d4ff]" : "text-zinc-300"
+                  )}>
+                    {item.name.replace(/\.(md|mdx)$/i, "")}
+                  </span>
+                  <span className="text-[11px] text-zinc-600 block truncate">
+                    {item.path}
+                  </span>
                 </div>
               </button>
             ))
           )}
         </div>
-        <div className="border-t border-zinc-800 px-4 py-3 text-xs text-zinc-500">
-          Press Esc to close · Enter to open or create
+
+        {/* Footer */}
+        <div className="border-t border-white/[0.04] px-4 py-2.5 flex items-center gap-4 text-[11px] text-zinc-500">
+          <div className="flex items-center gap-1">
+            <kbd className="rounded border border-white/[0.06] bg-white/[0.02] px-1 py-0.5 font-mono text-[10px]">↑↓</kbd>
+            <span>navigate</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <kbd className="rounded border border-white/[0.06] bg-white/[0.02] px-1 py-0.5 font-mono text-[10px]">↵</kbd>
+            <span>select</span>
+          </div>
         </div>
       </div>
     </div>

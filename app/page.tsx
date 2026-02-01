@@ -122,7 +122,14 @@ export default function HomePage() {
   }, [selectedPath]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-zinc-950 text-zinc-100">
+    <div className="flex h-screen w-full overflow-hidden bg-[#0a0a0b]">
+      {/* Subtle ambient background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-[40%] -left-[20%] w-[80%] h-[80%] rounded-full bg-[#00d4ff]/[0.02] blur-[120px]" />
+        <div className="absolute -bottom-[30%] -right-[20%] w-[60%] h-[60%] rounded-full bg-[#8b5cf6]/[0.02] blur-[120px]" />
+      </div>
+
+      {/* Sidebar */}
       <Sidebar
         tree={tree}
         selectedPath={selectedPath ?? undefined}
@@ -131,30 +138,62 @@ export default function HomePage() {
         onSelect={handleSelect}
         onCreate={() => setCreateOpen(true)}
       />
-      <main className="relative flex h-full flex-1 flex-col bg-[radial-gradient(circle_at_top,_rgba(63,63,70,0.15),_rgba(9,9,11,0.9))]">
-        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(120deg,_rgba(24,24,27,0.8)_0%,_rgba(9,9,11,0.9)_60%)]" />
-        <div className="relative flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-zinc-800/70 px-6 py-4 text-xs uppercase tracking-[0.3em] text-zinc-500">
-            <span>Vault</span>
-            <button
-              type="button"
-              onClick={() => setPaletteOpen(true)}
-              className="rounded-full border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-[0.2em] text-zinc-300 hover:bg-zinc-900"
+
+      {/* Main Content */}
+      <main className="relative flex h-full flex-1 flex-col">
+        {/* Top bar */}
+        <div className="flex items-center justify-between border-b border-white/[0.04] px-8 py-4">
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+              Vault
+            </span>
+            {selectedPath && (
+              <>
+                <span className="text-zinc-600">/</span>
+                <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-400">
+                  {selectedPath.split("/").slice(0, -1).join(" / ")}
+                </span>
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            className="group flex items-center gap-2 rounded-lg border border-white/[0.04] bg-white/[0.02] px-3 py-1.5 text-xs text-zinc-400 transition-all hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-zinc-300"
+          >
+            <svg
+              className="h-3.5 w-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
             >
-              Command Palette
-            </button>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <MarkdownViewer
-              title={selectedPath?.split("/").pop()?.replace(/\.(md|mdx)$/i, "") || "Welcome"}
-              frontmatter={doc?.frontmatter}
-              mdxSource={doc?.mdxSource}
-              path={doc?.path}
-              isLoading={loadingDoc}
-            />
-          </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+              />
+            </svg>
+            <span>Search</span>
+            <kbd className="ml-2 rounded border border-white/[0.06] bg-white/[0.02] px-1.5 py-0.5 font-mono text-[10px] text-zinc-500">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+
+        {/* Content area */}
+        <div className="flex-1 overflow-hidden">
+          <MarkdownViewer
+            title={selectedPath?.split("/").pop()?.replace(/\.(md|mdx)$/i, "") || "Welcome"}
+            frontmatter={doc?.frontmatter}
+            mdxSource={doc?.mdxSource}
+            path={doc?.path}
+            isLoading={loadingDoc}
+          />
         </div>
       </main>
+
+      {/* Modals */}
       <CommandPalette
         isOpen={paletteOpen}
         items={fileItems}
