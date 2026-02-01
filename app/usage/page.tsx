@@ -10,6 +10,7 @@ import {
   Flame,
   RefreshCcw,
   Layers,
+  Zap
 } from "lucide-react";
 
 type TokentapEntry = {
@@ -49,26 +50,26 @@ type TokentapResponse = {
   error: string | null;
 };
 
-const providerStyles: Record<string, { border: string; bg: string; text: string }> = {
+const providerStyles: Record<string, { color: string; bg: string; border: string }> = {
   openai: {
-    border: "border-[#00d4ff]/20",
-    bg: "bg-[#00d4ff]/10",
-    text: "text-[#00d4ff]",
+    color: "#06D6A0",
+    bg: "bg-[#06D6A0]/10",
+    border: "border-[#06D6A0]/20",
   },
   anthropic: {
-    border: "border-[#8b5cf6]/20",
-    bg: "bg-[#8b5cf6]/10",
-    text: "text-[#8b5cf6]",
+    color: "#FF7A5C",
+    bg: "bg-[#FF7A5C]/10",
+    border: "border-[#FF7A5C]/20",
   },
   gemini: {
-    border: "border-amber-400/20",
-    bg: "bg-amber-400/10",
-    text: "text-amber-400",
+    color: "#FFD166",
+    bg: "bg-[#FFD166]/10",
+    border: "border-[#FFD166]/20",
   },
   unknown: {
-    border: "border-white/[0.08]",
+    color: "#9D9BA8",
     bg: "bg-white/[0.04]",
-    text: "text-zinc-300",
+    border: "border-white/[0.08]",
   },
 };
 
@@ -145,14 +146,16 @@ export default function UsagePage() {
   );
 
   const statusLabel = summary?.lastSeenIso ? "Capturing" : "Idle";
-  const statusTone = summary?.lastSeenIso ? "text-emerald-400" : "text-zinc-400";
+  const statusColor = summary?.lastSeenIso ? "#06D6A0" : "#6B6977";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-white">
+    <div className="min-h-screen bg-observatory text-white">
+      {/* Background effects */}
+      <div className="fixed inset-0 pointer-events-none grid-overlay opacity-30" />
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 right-1/4 h-[420px] w-[420px] rounded-full bg-[#00d4ff]/[0.04] blur-[120px]" />
-        <div className="absolute bottom-0 left-1/4 h-[520px] w-[520px] rounded-full bg-[#8b5cf6]/[0.04] blur-[140px]" />
-        <div className="absolute top-1/3 left-1/2 h-[460px] w-[460px] -translate-x-1/2 rounded-full bg-emerald-500/[0.03] blur-[140px]" />
+        <div className="absolute -top-24 right-1/4 h-[420px] w-[420px] rounded-full bg-[#FF7A5C]/[0.04] blur-[120px]" />
+        <div className="absolute bottom-0 left-1/4 h-[520px] w-[520px] rounded-full bg-[#A78BFA]/[0.04] blur-[140px]" />
+        <div className="absolute top-1/3 left-1/2 h-[460px] w-[460px] -translate-x-1/2 rounded-full bg-[#06D6A0]/[0.03] blur-[140px]" />
       </div>
 
       <div className="relative z-10">
@@ -162,7 +165,7 @@ export default function UsagePage() {
               <div className="flex items-center gap-6">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 text-zinc-400 transition-colors hover:text-white"
+                  className="flex items-center gap-2 text-[#9D9BA8] transition-colors hover:text-white"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span className="text-sm">Back</span>
@@ -170,22 +173,22 @@ export default function UsagePage() {
                 <div className="h-6 w-px bg-white/[0.06]" />
                 <div>
                   <h1 className="text-2xl font-semibold tracking-tight">
-                    Token Usage History
+                    Token Usage
                   </h1>
-                  <p className="text-sm text-zinc-500 mt-1">
+                  <p className="text-sm text-[#6B6977] mt-1 font-mono">
                     Historical capture from tokentap
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2">
-                  <Activity className={`h-4 w-4 ${statusTone}`} />
-                  <span className={`text-sm ${statusTone}`}>{statusLabel}</span>
+                <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2">
+                  <div className="w-2 h-2 rounded-full status-beacon" style={{ background: statusColor }} />
+                  <span className="text-sm" style={{ color: statusColor }}>{statusLabel}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => fetchData(true)}
-                  className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-sm text-zinc-300 transition-colors hover:border-white/[0.18] hover:text-white"
+                  className="btn-observatory"
                 >
                   <RefreshCcw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                   Refresh
@@ -193,8 +196,9 @@ export default function UsagePage() {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-[#6B6977] font-mono">
               <span>Prompts dir: {data?.promptsDir ?? "~/.tokentap/prompts"}</span>
+              <span>•</span>
               <span>Last updated: {formatDateTime(lastUpdated)}</span>
             </div>
           </div>
@@ -202,7 +206,7 @@ export default function UsagePage() {
 
         <main className="mx-auto max-w-[1600px] px-8 py-8">
           {error ? (
-            <div className="mb-6 rounded-xl border border-amber-400/20 bg-amber-400/5 px-5 py-4 text-sm text-amber-200">
+            <div className="mb-6 rounded-xl border border-[#FFD166]/20 bg-[#FFD166]/5 px-5 py-4 text-sm text-[#FFD166]">
               {error.includes("no such file") || error.includes("ENOENT") ? (
                 <div>
                   No tokentap history found yet. Start tokentap, run your tool
@@ -220,55 +224,57 @@ export default function UsagePage() {
                 label: "Total Tokens",
                 value: summary ? formatNumber(summary.totalTokens) : "--",
                 icon: Flame,
-                accent: "text-[#00d4ff]",
+                color: "#FF7A5C",
               },
               {
                 label: "Requests",
                 value: summary ? formatNumber(summary.totalRequests) : "--",
                 icon: Layers,
-                accent: "text-emerald-400",
+                color: "#06D6A0",
               },
               {
                 label: "Active Days",
                 value: summary ? formatNumber(summary.activeDays) : "--",
                 icon: BarChart3,
-                accent: "text-violet-400",
+                color: "#A78BFA",
               },
               {
                 label: "Last Seen",
                 value: formatDateTime(summary?.lastSeenIso ?? null),
                 icon: Clock,
-                accent: "text-amber-300",
+                color: "#FFD166",
               },
-            ].map((stat) => (
+            ].map((stat, i) => (
               <div
                 key={stat.label}
-                className="rounded-xl border border-white/[0.04] bg-white/[0.02] p-5"
+                className="card-observatory p-5 animate-slide-up opacity-0"
+                style={{ animationDelay: `${i * 0.05}s`, animationFillMode: 'forwards' }}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-[0.15em] text-zinc-500">
-                    {stat.label}
-                  </span>
-                  <stat.icon className={`h-4 w-4 ${stat.accent}`} />
+                <div className="flex items-center justify-between mb-3">
+                  <span className="label-mono">{stat.label}</span>
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${stat.color}15` }}>
+                    <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
+                  </div>
                 </div>
-                <div className="mt-3 text-2xl font-semibold">{stat.value}</div>
+                <div className="text-2xl font-semibold" style={{ color: stat.color }}>{stat.value}</div>
               </div>
             ))}
           </div>
 
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            <section className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6">
-              <div className="flex items-center justify-between">
+            <section className="card-elevated p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-[#FF7A5C]/10">
+                  <Zap className="w-4 h-4 text-[#FF7A5C]" />
+                </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Provider Breakdown</h2>
-                  <p className="text-xs text-zinc-500 mt-1">
-                    Tokens and requests by provider
-                  </p>
+                  <h2 className="text-sm font-medium text-[#F5F3F0]">Provider Breakdown</h2>
+                  <p className="text-xs text-[#6B6977] mt-0.5">Tokens and requests by provider</p>
                 </div>
               </div>
-              <div className="mt-6 space-y-3">
+              <div className="space-y-3">
                 {providers.length === 0 ? (
-                  <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-4 text-sm text-zinc-500">
+                  <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-4 text-sm text-[#6B6977]">
                     No provider data yet.
                   </div>
                 ) : (
@@ -280,14 +286,14 @@ export default function UsagePage() {
                         className={`rounded-lg border ${style.border} ${style.bg} p-4`}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="text-sm font-semibold capitalize">
+                          <div className="text-sm font-semibold capitalize" style={{ color: style.color }}>
                             {provider.provider}
                           </div>
-                          <div className={`text-xs ${style.text}`}>
+                          <div className="text-xs font-mono" style={{ color: style.color }}>
                             {formatNumber(provider.tokens)} tokens
                           </div>
                         </div>
-                        <div className="mt-2 text-xs text-zinc-400">
+                        <div className="mt-2 text-xs text-[#6B6977] font-mono">
                           {formatNumber(provider.requests)} requests
                         </div>
                       </div>
@@ -297,18 +303,19 @@ export default function UsagePage() {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6">
-              <div className="flex items-center justify-between">
+            <section className="card-elevated p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-[#73A9FF]/10">
+                  <BarChart3 className="w-4 h-4 text-[#73A9FF]" />
+                </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Daily Usage</h2>
-                  <p className="text-xs text-zinc-500 mt-1">
-                    Last {Math.min(14, days.length)} days
-                  </p>
+                  <h2 className="text-sm font-medium text-[#F5F3F0]">Daily Usage</h2>
+                  <p className="text-xs text-[#6B6977] mt-0.5">Last {Math.min(14, days.length)} days</p>
                 </div>
               </div>
-              <div className="mt-6 space-y-3">
+              <div className="space-y-3">
                 {days.length === 0 ? (
-                  <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-4 text-sm text-zinc-500">
+                  <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] p-4 text-sm text-[#6B6977]">
                     No daily usage data yet.
                   </div>
                 ) : (
@@ -316,7 +323,7 @@ export default function UsagePage() {
                     const width = dayMax ? Math.round((day.tokens / dayMax) * 100) : 0;
                     return (
                       <div key={day.date} className="space-y-2">
-                        <div className="flex items-center justify-between text-xs text-zinc-400">
+                        <div className="flex items-center justify-between text-xs text-[#6B6977] font-mono">
                           <span>{formatDayLabel(day.date)}</span>
                           <span>
                             {formatNumber(day.tokens)} tokens • {formatNumber(day.requests)} req
@@ -324,7 +331,7 @@ export default function UsagePage() {
                         </div>
                         <div className="h-2 w-full rounded-full bg-white/[0.06]">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#00d4ff] to-[#8b5cf6]"
+                            className="h-full rounded-full bg-gradient-to-r from-[#FF7A5C] to-[#FFD166]"
                             style={{ width: `${width}%` }}
                           />
                         </div>
@@ -336,47 +343,48 @@ export default function UsagePage() {
             </section>
           </div>
 
-          <section className="mt-8 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6">
-            <div className="flex items-center justify-between">
+          <section className="mt-8 card-elevated p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-lg bg-[#A78BFA]/10">
+                <Activity className="w-4 h-4 text-[#A78BFA]" />
+              </div>
               <div>
-                <h2 className="text-lg font-semibold">Recent Prompts</h2>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Latest {recent.length} captured requests
-                </p>
+                <h2 className="text-sm font-medium text-[#F5F3F0]">Recent Prompts</h2>
+                <p className="text-xs text-[#6B6977] mt-0.5">Latest {recent.length} captured requests</p>
               </div>
             </div>
-            <div className="mt-6 overflow-hidden rounded-xl border border-white/[0.06]">
-              <div className="grid grid-cols-[160px_100px_1fr_120px] gap-4 border-b border-white/[0.06] bg-white/[0.04] px-4 py-3 text-xs uppercase tracking-[0.2em] text-zinc-500">
-                <span>Timestamp</span>
-                <span>Provider</span>
-                <span>Prompt</span>
-                <span className="text-right">Tokens</span>
+            <div className="overflow-hidden rounded-xl border border-white/[0.06]">
+              <div className="grid grid-cols-[160px_100px_1fr_120px] gap-4 border-b border-white/[0.06] bg-white/[0.04] px-4 py-3">
+                <span className="label-mono">Timestamp</span>
+                <span className="label-mono">Provider</span>
+                <span className="label-mono">Prompt</span>
+                <span className="label-mono text-right">Tokens</span>
               </div>
               {loading ? (
-                <div className="px-4 py-6 text-sm text-zinc-500">Loading...</div>
+                <div className="px-4 py-6 text-sm text-[#6B6977]">Loading...</div>
               ) : isEmpty ? (
-                <div className="px-4 py-6 text-sm text-zinc-500">
+                <div className="px-4 py-6 text-sm text-[#6B6977]">
                   No prompts captured yet.
                 </div>
               ) : (
                 recent.map((entry) => (
                   <div
                     key={entry.id}
-                    className="grid grid-cols-[160px_100px_1fr_120px] gap-4 border-b border-white/[0.04] px-4 py-4 text-sm text-zinc-300 last:border-b-0"
+                    className="grid grid-cols-[160px_100px_1fr_120px] gap-4 border-b border-white/[0.04] px-4 py-4 text-sm text-[#B8B5C4] last:border-b-0"
                   >
-                    <div className="text-xs text-zinc-500">
+                    <div className="text-xs text-[#6B6977] font-mono">
                       {formatDateTime(entry.timestampIso)}
-                      <div className="mt-1 text-[10px] text-zinc-600">
+                      <div className="mt-1 text-[10px] text-[#6B6977]/70">
                         {entry.model}
                       </div>
                     </div>
-                    <div className="text-xs capitalize text-zinc-400">
+                    <div className="text-xs capitalize" style={{ color: getProviderStyle(entry.provider).color }}>
                       {entry.provider}
                     </div>
-                    <div className="text-sm text-zinc-200">
+                    <div className="text-sm text-[#9D9BA8]">
                       {entry.promptPreview || "No preview available."}
                     </div>
-                    <div className="text-right text-xs text-zinc-400">
+                    <div className="text-right text-xs text-[#6B6977] font-mono">
                       {formatNumber(entry.tokens)}
                     </div>
                   </div>

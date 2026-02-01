@@ -11,6 +11,7 @@ import {
   Layers,
   PauseCircle,
   RefreshCcw,
+  Zap,
 } from "lucide-react";
 
 type CronSchedule = {
@@ -75,6 +76,29 @@ function scheduleLabel(schedule?: CronSchedule) {
   return parts.join(" · ") || "Scheduled";
 }
 
+const columnConfig = {
+  scheduled: {
+    color: "#06D6A0",
+    bg: "bg-[#06D6A0]/10",
+    border: "border-[#06D6A0]/20",
+  },
+  "one-shot": {
+    color: "#FFD166",
+    bg: "bg-[#FFD166]/10",
+    border: "border-[#FFD166]/20",
+  },
+  standby: {
+    color: "#73A9FF",
+    bg: "bg-[#73A9FF]/10",
+    border: "border-[#73A9FF]/20",
+  },
+  disabled: {
+    color: "#6B6977",
+    bg: "bg-white/[0.02]",
+    border: "border-white/[0.06]",
+  },
+};
+
 export default function CronPage() {
   const [jobs, setJobs] = useState<CronJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,63 +159,57 @@ export default function CronPage() {
 
   const nextRunMs = useMemo(() => getNextRun(enabledJobs), [enabledJobs]);
   const statusLabel = enabledJobs.length > 0 ? "Live" : "Idle";
-  const statusTone = enabledJobs.length > 0 ? "text-emerald-400" : "text-zinc-400";
+  const statusColor = enabledJobs.length > 0 ? "#06D6A0" : "#6B6977";
 
   const columns = [
     {
-      id: "scheduled",
+      id: "scheduled" as const,
       title: "Scheduled",
       description: "Recurring jobs with a queued run",
       jobs: scheduledJobs,
-      tone: "border-emerald-400/30",
-      accent: "text-emerald-300",
       icon: CheckCircle2,
     },
     {
-      id: "one-shot",
+      id: "one-shot" as const,
       title: "One-shot",
       description: "Auto-deletes after execution",
       jobs: oneShotJobs,
-      tone: "border-amber-400/30",
-      accent: "text-amber-300",
       icon: Bolt,
     },
     {
-      id: "standby",
+      id: "standby" as const,
       title: "Standby",
       description: "Enabled but waiting for a next run",
       jobs: standbyJobs,
-      tone: "border-sky-400/30",
-      accent: "text-sky-300",
       icon: Layers,
     },
     {
-      id: "disabled",
+      id: "disabled" as const,
       title: "Disabled",
       description: "Paused from the line",
       jobs: disabledJobs,
-      tone: "border-zinc-500/30",
-      accent: "text-zinc-400",
       icon: PauseCircle,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#070809] text-white">
+    <div className="min-h-screen bg-observatory text-white">
+      {/* Background effects */}
+      <div className="fixed inset-0 pointer-events-none grid-overlay opacity-30" />
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-16 right-1/4 h-[360px] w-[360px] rounded-full bg-[#00d4ff]/[0.05] blur-[140px]" />
-        <div className="absolute bottom-0 left-1/3 h-[420px] w-[420px] rounded-full bg-emerald-500/[0.05] blur-[160px]" />
-        <div className="absolute top-1/3 left-0 h-[320px] w-[320px] rounded-full bg-amber-500/[0.04] blur-[140px]" />
+        <div className="absolute -top-24 right-1/4 h-[420px] w-[420px] rounded-full bg-[#06D6A0]/[0.04] blur-[120px]" />
+        <div className="absolute bottom-0 left-1/4 h-[520px] w-[520px] rounded-full bg-[#FFD166]/[0.04] blur-[140px]" />
+        <div className="absolute top-1/3 left-1/2 h-[460px] w-[460px] -translate-x-1/2 rounded-full bg-[#73A9FF]/[0.03] blur-[140px]" />
       </div>
 
       <div className="relative z-10">
         <header className="border-b border-white/[0.04]">
-          <div className="mx-auto max-w-[1700px] px-8 py-6">
+          <div className="mx-auto max-w-[1600px] px-8 py-6">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-6">
                 <Link
                   href="/"
-                  className="flex items-center gap-2 text-zinc-400 transition-colors hover:text-white"
+                  className="flex items-center gap-2 text-[#9D9BA8] transition-colors hover:text-white"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span className="text-sm">Back</span>
@@ -201,147 +219,191 @@ export default function CronPage() {
                   <h1 className="text-2xl font-semibold tracking-tight">
                     Cron Assembly Line
                   </h1>
-                  <p className="mt-1 text-sm text-zinc-500">
+                  <p className="mt-1 text-sm text-[#6B6977] font-mono">
                     Live status of scheduled background work
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2">
-                  <Activity className={`h-4 w-4 ${statusTone}`} />
-                  <span className={`text-sm ${statusTone}`}>{statusLabel}</span>
+                <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 py-2">
+                  <div className="w-2 h-2 rounded-full status-beacon" style={{ background: statusColor }} />
+                  <span className="text-sm" style={{ color: statusColor }}>{statusLabel}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => fetchJobs(true)}
-                  className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-sm text-zinc-300 transition-colors hover:border-white/[0.18] hover:text-white"
+                  className="btn-observatory"
                 >
-                  <RefreshCcw
-                    className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-                  />
+                  <RefreshCcw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                   Refresh
                 </button>
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-[#6B6977] font-mono">
               <span>Total jobs: {formatNumber(jobs.length)}</span>
+              <span>•</span>
               <span>Enabled: {formatNumber(enabledJobs.length)}</span>
+              <span>•</span>
               <span>Disabled: {formatNumber(disabledJobs.length)}</span>
+              <span>•</span>
               <span>Next run: {formatDateTime(nextRunMs ?? undefined)}</span>
-              <span>
-                Last updated: {lastUpdated ? formatDateTime(Date.parse(lastUpdated)) : "--"}
-              </span>
+              <span>•</span>
+              <span>Last updated: {lastUpdated ? formatDateTime(Date.parse(lastUpdated)) : "--"}</span>
             </div>
           </div>
         </header>
 
-        <main className="mx-auto max-w-[1700px] px-8 py-8">
+        <main className="mx-auto max-w-[1600px] px-8 py-8">
           {error ? (
-            <div className="mb-6 rounded-xl border border-amber-400/20 bg-amber-400/5 px-5 py-4 text-sm text-amber-200">
+            <div className="mb-6 rounded-xl border border-[#FFD166]/20 bg-[#FFD166]/5 px-5 py-4 text-sm text-[#FFD166]">
               Unable to load cron jobs: {error}
             </div>
           ) : null}
 
-          <div className="mb-8 rounded-2xl border border-white/[0.04] bg-white/[0.02] p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">Assembly Line</h2>
-                <p className="mt-1 text-xs text-zinc-500">
-                  Jobs flow through stations based on schedule state
-                </p>
+          {/* Stats row */}
+          <div className="grid gap-4 lg:grid-cols-4 mb-8">
+            {[
+              { label: "Total Jobs", value: jobs.length, icon: Layers, color: "#FF7A5C" },
+              { label: "Enabled", value: enabledJobs.length, icon: CheckCircle2, color: "#06D6A0" },
+              { label: "Disabled", value: disabledJobs.length, icon: PauseCircle, color: "#6B6977" },
+              { label: "Next Run", value: formatDateTime(nextRunMs ?? undefined), icon: Clock, color: "#FFD166" },
+            ].map((stat, i) => (
+              <div
+                key={stat.label}
+                className="card-observatory p-5 animate-slide-up opacity-0"
+                style={{ animationDelay: `${i * 0.05}s`, animationFillMode: 'forwards' }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="label-mono">{stat.label}</span>
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${stat.color}15` }}>
+                    <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
+                  </div>
+                </div>
+                <div className="text-2xl font-semibold" style={{ color: stat.color }}>
+                  {typeof stat.value === 'number' ? formatNumber(stat.value) : stat.value}
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-xs text-zinc-500">
-                <Clock className="h-4 w-4 text-zinc-400" />
+            ))}
+          </div>
+
+          {/* Assembly line visual */}
+          <div className="card-elevated p-6 mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-lg bg-[#A78BFA]/10">
+                <Zap className="w-4 h-4 text-[#A78BFA]" />
+              </div>
+              <div>
+                <h2 className="text-sm font-medium text-[#F5F3F0]">Assembly Line</h2>
+                <p className="text-xs text-[#6B6977] mt-0.5">Jobs flow through stations based on schedule state</p>
+              </div>
+              <div className="ml-auto flex items-center gap-2 text-xs text-[#6B6977] font-mono">
+                <Clock className="h-4 w-4 text-[#9D9BA8]" />
                 {loading ? "Syncing line…" : "Line synced"}
               </div>
             </div>
             <div
-              className="mt-6 h-2 w-full rounded-full"
+              className="h-2 w-full rounded-full"
               style={{
-                backgroundImage:
-                  "repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 12px, rgba(255,255,255,0.03) 12px, rgba(255,255,255,0.03) 24px)",
+                background: "linear-gradient(90deg, #06D6A0 0%, #FFD166 33%, #73A9FF 66%, #6B6977 100%)",
+                opacity: 0.3,
               }}
             />
+            <div className="flex justify-between mt-3 text-[10px] text-[#6B6977] font-mono uppercase tracking-wider">
+              <span>Scheduled</span>
+              <span>One-shot</span>
+              <span>Standby</span>
+              <span>Disabled</span>
+            </div>
           </div>
 
+          {/* Job columns */}
           <div className="grid gap-6 lg:grid-cols-4">
-            {columns.map((column) => (
-              <section
-                key={column.id}
-                className={`rounded-2xl border ${column.tone} bg-white/[0.02] p-5`}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <column.icon className={`h-4 w-4 ${column.accent}`} />
-                      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400">
-                        {column.title}
-                      </h3>
+            {columns.map((column, colIndex) => {
+              const config = columnConfig[column.id];
+              return (
+                <section
+                  key={column.id}
+                  className="animate-slide-up opacity-0"
+                  style={{ animationDelay: `${(colIndex + 4) * 0.05}s`, animationFillMode: 'forwards' }}
+                >
+                  <div className="flex items-center gap-3 pb-4 border-b border-white/[0.04] mb-4">
+                    <div
+                      className="p-2 rounded-lg"
+                      style={{ backgroundColor: `${config.color}15` }}
+                    >
+                      <column.icon className="w-4 h-4" style={{ color: config.color }} />
                     </div>
-                    <p className="mt-2 text-xs text-zinc-500">
-                      {column.description}
-                    </p>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-[#F5F3F0]">{column.title}</h3>
+                      <p className="text-xs text-[#6B6977] mt-0.5">{column.description}</p>
+                    </div>
+                    <span
+                      className="text-xs font-mono px-2 py-1 rounded-full"
+                      style={{ backgroundColor: `${config.color}15`, color: config.color }}
+                    >
+                      {formatNumber(column.jobs.length)}
+                    </span>
                   </div>
-                  <div className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-xs text-zinc-300">
-                    {formatNumber(column.jobs.length)}
-                  </div>
-                </div>
 
-                <div className="mt-4 space-y-3">
-                  {loading ? (
-                    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-xs text-zinc-500">
-                      Loading jobs...
-                    </div>
-                  ) : column.jobs.length === 0 ? (
-                    <div className="rounded-lg border border-white/[0.04] bg-white/[0.02] px-4 py-3 text-xs text-zinc-500">
-                      No jobs here yet.
-                    </div>
-                  ) : (
-                    column.jobs.map((job) => (
-                      <div
-                        key={job.id}
-                        className="rounded-lg border border-white/[0.08] bg-[#0c0d10] px-4 py-3"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-semibold text-zinc-100">
-                              {job.name}
-                            </div>
-                            <div className="mt-1 text-xs text-zinc-500">
-                              {job.description ?? "No description"}
-                            </div>
-                          </div>
-                          <div className="text-[10px] text-zinc-500">
-                            {job.enabled ? "Enabled" : "Disabled"}
-                          </div>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2 text-[10px] text-zinc-400">
-                          <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2 py-1">
-                            {scheduleLabel(job.schedule)}
-                          </span>
-                          <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2 py-1">
-                            Next: {formatDateTime(job.state?.nextRunAtMs)}
-                          </span>
-                          {job.schedule?.tz ? (
-                            <span className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2 py-1">
-                              TZ: {job.schedule.tz}
-                            </span>
-                          ) : null}
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2 text-[10px] text-zinc-500">
-                          <span>ID: {job.id}</span>
-                          {job.sessionTarget ? (
-                            <span>Session: {job.sessionTarget}</span>
-                          ) : null}
-                          {job.wakeMode ? <span>Wake: {job.wakeMode}</span> : null}
-                        </div>
+                  <div className="space-y-3">
+                    {loading ? (
+                      <div className="rounded-xl border border-white/[0.04] bg-white/[0.02] px-4 py-4 text-sm text-[#6B6977]">
+                        Loading jobs...
                       </div>
-                    ))
-                  )}
-                </div>
-              </section>
-            ))}
+                    ) : column.jobs.length === 0 ? (
+                      <div className="rounded-xl border border-white/[0.04] bg-white/[0.02] px-4 py-4 text-sm text-[#6B6977]">
+                        No jobs here yet.
+                      </div>
+                    ) : (
+                      column.jobs.map((job) => (
+                        <div
+                          key={job.id}
+                          className={`rounded-xl border ${config.border} ${config.bg} p-4`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-semibold text-[#F5F3F0]">
+                                {job.name}
+                              </div>
+                              <div className="mt-1 text-xs text-[#6B6977]">
+                                {job.description ?? "No description"}
+                              </div>
+                            </div>
+                            <div
+                              className="text-[10px] uppercase tracking-wider font-mono"
+                              style={{ color: config.color }}
+                            >
+                              {job.enabled ? "Enabled" : "Disabled"}
+                            </div>
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <span className="tag">
+                              {scheduleLabel(job.schedule)}
+                            </span>
+                            <span className="tag">
+                              Next: {formatDateTime(job.state?.nextRunAtMs)}
+                            </span>
+                            {job.schedule?.tz ? (
+                              <span className="tag">
+                                TZ: {job.schedule.tz}
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-[#6B6977] font-mono">
+                            <span>ID: {job.id}</span>
+                            {job.sessionTarget ? (
+                              <span>Session: {job.sessionTarget}</span>
+                            ) : null}
+                            {job.wakeMode ? <span>Wake: {job.wakeMode}</span> : null}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         </main>
       </div>

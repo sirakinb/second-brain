@@ -7,6 +7,7 @@ import MarkdownViewer from "@/components/markdown-viewer";
 import CommandPalette from "@/components/command-palette";
 import CreateDocModal from "@/components/create-doc-modal";
 import type { DocFrontmatter, DocTreeNode } from "@/lib/types";
+import { Search } from "lucide-react";
 
 type DocResponse = {
   path: string;
@@ -122,11 +123,15 @@ export default function HomePage() {
   }, [selectedPath]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#0a0a0b]">
-      {/* Subtle ambient background */}
+    <div className="flex h-screen w-full overflow-hidden bg-observatory">
+      {/* Grid overlay */}
+      <div className="fixed inset-0 pointer-events-none grid-overlay opacity-30" />
+
+      {/* Ambient glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[40%] -left-[20%] w-[80%] h-[80%] rounded-full bg-[#00d4ff]/[0.02] blur-[120px]" />
-        <div className="absolute -bottom-[30%] -right-[20%] w-[60%] h-[60%] rounded-full bg-[#8b5cf6]/[0.02] blur-[120px]" />
+        <div className="absolute -top-[30%] -left-[15%] w-[60%] h-[60%] rounded-full bg-[#FF7A5C]/[0.04] blur-[150px]" />
+        <div className="absolute -bottom-[20%] -right-[15%] w-[50%] h-[50%] rounded-full bg-[#FFD166]/[0.03] blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] rounded-full bg-[#73A9FF]/[0.02] blur-[120px]" />
       </div>
 
       {/* Sidebar */}
@@ -143,14 +148,14 @@ export default function HomePage() {
       <main className="relative flex h-full flex-1 flex-col">
         {/* Top bar */}
         <div className="flex items-center justify-between border-b border-white/[0.04] px-8 py-4">
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+          <div className="flex items-center gap-4">
+            <span className="label-mono">
               Vault
             </span>
             {selectedPath && (
               <>
-                <span className="text-zinc-600">/</span>
-                <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-zinc-400">
+                <span className="text-[#6B6977]">/</span>
+                <span className="text-[12px] font-medium text-[#9D9BA8]">
                   {selectedPath.split("/").slice(0, -1).join(" / ")}
                 </span>
               </>
@@ -159,23 +164,11 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => setPaletteOpen(true)}
-            className="group flex items-center gap-2 rounded-lg border border-white/[0.04] bg-white/[0.02] px-3 py-1.5 text-xs text-zinc-400 transition-all hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-zinc-300"
+            className="group flex items-center gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-4 py-2 text-sm text-[#9D9BA8] transition-all duration-200 hover:border-white/[0.1] hover:bg-white/[0.04] hover:text-[#F5F3F0]"
           >
-            <svg
-              className="h-3.5 w-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-              />
-            </svg>
-            <span>Search</span>
-            <kbd className="ml-2 rounded border border-white/[0.06] bg-white/[0.02] px-1.5 py-0.5 font-mono text-[10px] text-zinc-500">
+            <Search className="h-4 w-4 text-[#6B6977] group-hover:text-[#9D9BA8] transition-colors" />
+            <span>Search documents</span>
+            <kbd className="ml-2 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 font-mono text-[10px] text-[#6B6977]">
               ⌘K
             </kbd>
           </button>
