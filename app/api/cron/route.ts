@@ -29,7 +29,10 @@ export async function GET() {
       throw new Error(data.error?.message || "Gateway request failed");
     }
 
-    return Response.json(data.result, {
+    // Extract jobs from the nested structure
+    const jobs = data.result?.details?.jobs || [];
+
+    return Response.json({ jobs }, {
       headers: {
         "Cache-Control": "no-store",
       },

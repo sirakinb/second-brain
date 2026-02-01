@@ -41,6 +41,9 @@ export default function ConfigPage() {
     try {
       const response = await fetch('/api/config');
       const data = await response.json();
+      console.log('API Response:', data);
+      console.log('Files:', data.files);
+      console.log('First file:', data.files[0]);
       setFiles(data.files);
       setLoading(false);
     } catch (error) {
