@@ -1,35 +1,44 @@
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const execAsync = promisify(exec);
+const GATEWAY_URL = "http://127.0.0.1:18789";
 
 export async function GET() {
   try {
-    const { stdout } = await execAsync("/bin/zsh -lc 'clawdbot cron list --json'", {
-      maxBuffer: 1024 * 1024 * 10,
+    const response = await fetch(`${GATEWAY_URL}/tools/invoke`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tool: "cron",
+        action: "list",
+        args: {},
+      }),
     });
 
-    const data = JSON.parse(stdout);
-    return Response.json(data, {
+    if (!response.ok) {
+      throw new Error(`Gateway responded with ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.ok) {
+      throw new Error(data.error?.message || "Gateway request failed");
+    }
+
+    return Response.json(data.result, {
       headers: {
         "Cache-Control": "no-store",
       },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    const stderr =
-      typeof error === "object" && error && "stderr" in error
-        ? String((error as { stderr?: string }).stderr ?? "")
-        : "";
-
-    console.error("Failed to list cron jobs:", message, stderr);
+    console.error("Failed to list cron jobs:", message);
 
     return Response.json(
       {
-        error: stderr.trim() || message,
+        error: message,
       },
       {
         status: 500,
