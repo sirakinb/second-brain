@@ -8,8 +8,12 @@ const execAsync = promisify(exec);
 
 export async function GET() {
   try {
-    const { stdout } = await execAsync("/opt/homebrew/bin/clawdbot cron list --json", {
+    const { stdout } = await execAsync("clawdbot cron list --json", {
       maxBuffer: 1024 * 1024 * 10,
+      env: {
+        ...process.env,
+        PATH: `${process.env.PATH}:/opt/homebrew/bin:/usr/local/bin`,
+      },
     });
 
     const data = JSON.parse(stdout);
