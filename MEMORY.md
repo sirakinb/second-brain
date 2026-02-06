@@ -68,7 +68,10 @@
 
 ### Communication
 - ✅ Email sending (AgentMail: agentadzo@agentmail.to)
-- ✅ Twitter posting (via Twitter API)
+- ⚠️ Twitter API (blocked - 403 Forbidden on posting, 429 on search)
+  - Likely Free tier limitation
+  - Need Basic tier ($100/mo) for write access
+  - Status: Awaiting decision from Aki (Feb 5, 2026)
 - ✅ Moltbook (AI agent social network - claim pending)
 
 ### Google Workspace
@@ -79,7 +82,11 @@
 
 ### Development & Tools
 - ✅ GitHub access
-- ✅ Whisper API (audio transcription)
+- ✅ OpenAI Whisper API (audio transcription - working as of Feb 5)
+  - Venv: ~/clawd/venv-transcribe/
+  - Can transcribe Aki's voice messages
+- ✅ Yahoo Finance (yfinance) - for real-time stock prices & technical data
+  - More reliable than Grok for financial data
 - ✅ Second Brain dashboard (cron jobs, config, projects)
 - ✅ Last30days research skill (Reddit/Twitter/web scanning via xAI)
 - ✅ Codex CLI (building software)
@@ -134,7 +141,7 @@
 
 ## Active Projects & TODOs
 
-### Trading System (Started Feb 2, 2026)
+### Trading System (Started Feb 2, Updated Feb 5, 2026)
 **Goal:** Help Aki take $300 → $100,000 in 2026
 
 **Profile Created:** ~/clawd/aki-trading-profile.md
@@ -144,14 +151,21 @@
 - Weaknesses: Greed, recklessness, carelessness
 - **Key insight:** "Simplicity + discipline beats complexity + knowledge"
 
-**Next Steps:**
-1. Define exact setup criteria
-2. Position sizing rules for $300 account
-3. Daily research process (FinViz scanner, Alpaca API)
-4. Trade journal system
-5. Alpaca API integration
+**Critical Feedback from Aki (Feb 5):**
+- Need **multi-timeframe analysis** (not just short-term)
+- Need **real supply/demand zones** (not just recent highs/lows)
+- Need **complete technical analysis** (RSI, Stochastic RSI, MAs, structure)
+- Need **full spectrum**: scalps, day trades, AND swing trades
+- **Quote:** "I want the run of the gamut"
 
-**Status:** On hold until Aki ready to continue (reminder set for Feb 3 at 4 PM)
+**Updated Requirements:**
+1. Multi-timeframe scanner (intraday, daily/weekly, weekly/monthly)
+2. Stochastic RSI + moving averages (50MA, 200MA)
+3. Real supply/demand zone detection
+4. Separate scans for day trades vs swing trades
+5. Yahoo Finance for all price data (NOT Grok - Grok was $90 off on PLTR)
+
+**Status:** On pause, awaiting next work session with Aki
 
 ### Still App Marketing
 - Draft video scripts for Adzo (AI influencer)
@@ -214,13 +228,41 @@ client.inboxes.messages.send(
 - Daily memory files are backup when conversations get truncated
 - Added to AGENTS.md as mandatory rule
 
-### Operational (Feb 1, 2026)
+### Operational (Feb 1-6, 2026)
 
 - **Multimedia workflows:** Aki builds the workflow/pipeline, I execute it
 - **Memory failure identified:** Was not documenting commitments in real-time
 - **Solution:** Added explicit protocol to AGENTS.md that gets loaded every session
 - **Model usage:** Codex CLI for building software, Kimi for regular tasks
 
+### Data & Research (Feb 5, 2026)
+
+**Critical Learning: Don't Trust AI for Financial Data**
+- Grok API gave PLTR price as $48.23
+- Actual PLTR price: $139.54
+- Error: $90+ off (65% wrong!)
+
+**Solution:**
+- Use **Yahoo Finance (yfinance)** for all stock prices, technicals, volume
+- Use **Grok** ONLY for Twitter sentiment analysis (not prices)
+- Always verify AI-provided financial data with real sources
+
+### Trading Analysis Requirements (Feb 5, 2026)
+
+**Multi-Timeframe Approach:**
+- Short-term: Intraday (scalps/day trades)
+- Medium-term: Daily/weekly (swing trades)
+- Long-term: Weekly/monthly (supply/demand zones)
+
+**Complete Technical Criteria:**
+- RSI + Stochastic RSI
+- Moving averages (50MA, 200MA)
+- Price structure
+- Real supply/demand zones (not just recent highs/lows)
+- Volume analysis
+
+**Key Insight:** Can't recommend swing trades by only looking at 5-day data. Need longer timeframes to identify real support/resistance zones.
+
 ---
 
-*Updated: 2026-02-02*
+*Updated: 2026-02-06*

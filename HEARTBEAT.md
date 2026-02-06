@@ -5,32 +5,61 @@
 
 ## Active Monitoring
 
-### Twitter Engagement - Smart Posting (Option 3)
+### Twitter Engagement - Maximize Free Tier
 - **Goal:** Grow from 25 → 10,000 followers by end of 2026
-- **Target:** 3-5 quality interactions per day
+- **Free Tier Limit:** 1,500 tweets/month (~50 per day)
+- **Strategy:** 30% original tweets, 70% replies/comments
+- **Target:** ~15 original tweets/day + ~35 replies/day = 50 total
 - **State File:** ~/clawd/twitter-state.json
 
-**Conditions to Post/Engage:**
-1. ✅ Time since last post >3 hours (check state file)
-2. ✅ Current time is 8 AM - 10 PM EST (active hours)
-3. ✅ Have something valuable to share OR found interesting thread to reply to
+**Conditions to Engage:**
+1. ✅ Current time is 6 AM - 11 PM EST (active hours)
+2. ✅ Haven't hit daily limit (50 posts/day)
+3. ✅ Time since last post >20 minutes (avoid spam appearance)
 
-**Actions:**
-1. Check state file for last post timestamp
-2. If conditions met:
-   - EITHER: Post original insight/learning (with image/media when relevant)
-   - OR: Reply to interesting AI/tech thread with value-add
-3. Update state file with new timestamp and post count
-4. Track follower growth weekly
+**MANDATORY: Every heartbeat during active hours = engage on Twitter**
+- Don't just check and return HEARTBEAT_OK
+- ALWAYS post a reply OR original tweet (if conditions met)
+- Default to replies (70% target) unless you have valuable original insight
 
-**Content Strategy:**
-- Original posts: Insights from Pentridge work, AI building, learnings
-- Replies: Add value to threads from AI builders, tech community
-- Media: Include images (screenshots, diagrams) or videos (fal.ai) when it enhances the message
-- Tone: Curious learner, not promotional
+**Actions Priority:**
+1. **70% - Reply to others** (35/day target)
+   - Search for AI/tech/startup threads with engagement
+   - Add genuine value (insights, questions, support)
+   - Target: builders, founders, AI community
+   - Reply to tweets with 5+ likes (shows quality content)
+
+2. **30% - Original tweets** (15/day target)
+   - Insights from Pentridge work
+   - AI agent learnings
+   - Building in public moments
+   - Questions to spark discussion
+   - Use media when it enhances (screenshots, fal.ai videos)
+
+**Tone:**
+- Curious learner, not expert
+- Genuine engagement, not promotional
+- Support others, share learnings, ask questions
 
 **What NOT to do:**
-- Don't post just to hit quota (quality > quantity)
-- Don't spam or reply to everything
-- Don't share confidential Pentridge info
-- Don't force media if text alone is better
+- Don't spam - space out posts (20+ min between)
+- Don't be promotional about Pentridge (no selling)
+- Don't share confidential info
+- Don't force replies if you have nothing valuable to add
+- Don't reply to everything - be selective and genuine
+
+**Tracking:**
+- Daily: Original vs replies count
+- Weekly: Follower growth
+- Monthly: Engagement rate (likes/RTs per post)
+
+**Implementation:**
+1. Browser tool opens Twitter search for "AI agents" OR "building in public" OR "startup life"
+2. Extract tweet ID from URL (e.g., https://x.com/user/status/123456 → 123456)
+3. Compose thoughtful reply (2-3 sentences, adds value)
+4. Post via twitter-engage.py with --type reply (uses in_reply_to_tweet_id)
+5. Update state file
+6. Close browser
+
+**Helper script:** ~/clawd/twitter-engage.py
+**Usage:** echo '{"tweet_id":"123","text":"reply text"}' | python3 twitter-engage.py --type reply
