@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ConvexClientProvider } from "@/providers/convex-provider";
 
 const instrumentSans = Instrument_Sans({
   variable: "--font-sans",
@@ -33,7 +34,7 @@ export default function RootLayout({
       >
         {/* Noise texture overlay */}
         <div className="fixed inset-0 pointer-events-none z-50 noise-overlay" />
-        {children}
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );

@@ -97,11 +97,10 @@ function TreeNode({
 }
 
 const navItems = [
-  { href: "/architecture", label: "Architecture", icon: Layers },
-  { href: "/projects", label: "Projects", icon: LayoutGrid },
-  { href: "/config", label: "Config", icon: Settings },
-  { href: "/cron", label: "Cron Jobs", icon: Clock },
-  { href: "/usage", label: "Usage", icon: Zap },
+  { href: "/", label: "Mission Control", icon: Zap },
+  { href: "/activity", label: "Activity Feed", icon: Layers },
+  { href: "/calendar", label: "Calendar", icon: Clock },
+  { href: "/search", label: "Global Search", icon: Settings },
 ];
 
 export default function Sidebar({

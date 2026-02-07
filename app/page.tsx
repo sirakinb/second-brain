@@ -1,129 +1,46 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { MDXRemoteSerializeResult } from "next-mdx-remote";
-import Sidebar from "@/components/sidebar";
-import MarkdownViewer from "@/components/markdown-viewer";
-import CommandPalette from "@/components/command-palette";
-import CreateDocModal from "@/components/create-doc-modal";
-import type { DocFrontmatter, DocTreeNode } from "@/lib/types";
-import { Search } from "lucide-react";
-
-type DocResponse = {
-  path: string;
-  frontmatter: DocFrontmatter;
-  content: string;
-  mdxSource: MDXRemoteSerializeResult;
-};
-
-function flattenTree(tree: DocTreeNode[]) {
-  const files: DocTreeNode[] = [];
-  const visit = (nodes: DocTreeNode[]) => {
-    for (const node of nodes) {
-      if (node.type === "file") {
-        files.push(node);
-      } else if (node.children) {
-        visit(node.children);
-      }
-    }
-  };
-  visit(tree);
-  return files;
-}
-
-function encodePath(path: string) {
-  return path.split("/").map(encodeURIComponent).join("/");
-}
-
-function slugify(value: string) {
-  const slug = value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-  return slug || "untitled";
-}
+import Link from "next/link";
+import { Activity, Calendar, Search, Brain, Zap } from "lucide-react";
 
 export default function HomePage() {
-  const [tree, setTree] = useState<DocTreeNode[]>([]);
-  const [selectedPath, setSelectedPath] = useState<string | null>(null);
-  const [doc, setDoc] = useState<DocResponse | null>(null);
-  const [loadingDoc, setLoadingDoc] = useState(false);
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const fileItems = useMemo(() => flattenTree(tree), [tree]);
-
-  const refreshTree = async () => {
-    const response = await fetch("/api/docs/tree");
-    const data = await response.json();
-    const nextTree = data.tree ?? [];
-    setTree(nextTree);
-    if (!selectedPath) {
-      const firstFile = flattenTree(nextTree)[0];
-      if (firstFile) {
-        setSelectedPath(firstFile.path);
-      }
-    }
-  };
-
-  const fetchDoc = async (path: string) => {
-    setLoadingDoc(true);
-    try {
-      const response = await fetch(`/api/docs/${encodePath(path)}`);
-      if (!response.ok) {
-        setDoc(null);
-        return;
-      }
-      const data = (await response.json()) as DocResponse;
-      setDoc(data);
-    } finally {
-      setLoadingDoc(false);
-    }
-  };
-
-  const handleSelect = (path: string) => {
-    setSelectedPath(path);
-  };
-
-  const handleCreate = async (params: {
-    title: string;
-    folder?: string;
-    tags?: string[];
-  }) => {
-    const folder = params.folder?.replace(/\\/g, "/").replace(/^\/+/, "");
-    const fileName = `${slugify(params.title)}.md`;
-    const filePath = folder ? `${folder}/${fileName}` : fileName;
-    const today = new Date().toISOString().slice(0, 10);
-
-    await fetch("/api/docs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        path: filePath,
-        title: params.title,
-        date: today,
-        tags: params.tags ?? [],
-        content: `# ${params.title}\n\nStart writing your thoughts here.\n`,
-      }),
-    });
-
-    await refreshTree();
-    setSelectedPath(filePath);
-  };
-
-  useEffect(() => {
-    refreshTree();
-  }, []);
-
-  useEffect(() => {
-    if (selectedPath) {
-      fetchDoc(selectedPath);
-    }
-  }, [selectedPath]);
+  const features = [
+    {
+      title: "Activity Feed",
+      description: "Monitor every action Clawdbot takes in real-time. Track tool calls, commands, and token usage.",
+      href: "/activity",
+      icon: Activity,
+      color: "from-[#FF7A5C]/20 to-[#FF7A5C]/5",
+      iconColor: "text-[#FF7A5C]",
+    },
+    {
+      title: "Calendar",
+      description: "View all scheduled tasks and cron jobs. Weekly view of upcoming autonomous work.",
+      href: "/calendar",
+      icon: Calendar,
+      color: "from-[#FFD166]/20 to-[#FFD166]/5",
+      iconColor: "text-[#FFD166]",
+    },
+    {
+      title: "Global Search",
+      description: "Search across all memories, documents, and conversations. Find any past context instantly.",
+      href: "/search",
+      icon: Search,
+      color: "from-[#73A9FF]/20 to-[#73A9FF]/5",
+      iconColor: "text-[#73A9FF]",
+    },
+    {
+      title: "Knowledge Vault",
+      description: "Browse and edit your Second Brain documents, daily journals, and project notes.",
+      href: "/vault",
+      icon: Brain,
+      color: "from-[#06FFA5]/20 to-[#06FFA5]/5",
+      iconColor: "text-[#06FFA5]",
+    },
+  ];
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-observatory">
+    <div className="flex min-h-screen w-full flex-col bg-observatory">
       {/* Grid overlay */}
       <div className="fixed inset-0 pointer-events-none grid-overlay opacity-30" />
 
@@ -134,71 +51,68 @@ export default function HomePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] rounded-full bg-[#73A9FF]/[0.02] blur-[120px]" />
       </div>
 
-      {/* Sidebar */}
-      <Sidebar
-        tree={tree}
-        selectedPath={selectedPath ?? undefined}
-        isCollapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
-        onSelect={handleSelect}
-        onCreate={() => setCreateOpen(true)}
-      />
+      {/* Header */}
+      <header className="relative border-b border-white/[0.04] px-8 py-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex items-center gap-3">
+            <Zap className="h-8 w-8 text-[#FF7A5C]" />
+            <h1 className="text-3xl font-bold text-[#F5F3F0]">
+              Mission Control
+            </h1>
+          </div>
+          <p className="mt-2 text-sm text-[#9D9BA8]">
+            Central command for Clawdbot autonomous operations
+          </p>
+        </div>
+      </header>
 
       {/* Main Content */}
-      <main className="relative flex h-full flex-1 flex-col">
-        {/* Top bar */}
-        <div className="flex items-center justify-between border-b border-white/[0.04] px-8 py-4">
-          <div className="flex items-center gap-4">
-            <span className="label-mono">
-              Vault
-            </span>
-            {selectedPath && (
-              <>
-                <span className="text-[#6B6977]">/</span>
-                <span className="text-[12px] font-medium text-[#9D9BA8]">
-                  {selectedPath.split("/").slice(0, -1).join(" / ")}
-                </span>
-              </>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setPaletteOpen(true)}
-            className="group flex items-center gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-4 py-2 text-sm text-[#9D9BA8] transition-all duration-200 hover:border-white/[0.1] hover:bg-white/[0.04] hover:text-[#F5F3F0]"
-          >
-            <Search className="h-4 w-4 text-[#6B6977] group-hover:text-[#9D9BA8] transition-colors" />
-            <span>Search documents</span>
-            <kbd className="ml-2 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 font-mono text-[10px] text-[#6B6977]">
-              ⌘K
-            </kbd>
-          </button>
-        </div>
+      <main className="relative flex-1 px-8 py-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-6 md:grid-cols-2">
+            {features.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <Link
+                  key={feature.href}
+                  href={feature.href}
+                  className="group relative overflow-hidden rounded-2xl border border-white/[0.05] bg-gradient-to-br from-white/[0.02] to-transparent p-8 transition-all duration-300 hover:border-white/[0.1] hover:bg-white/[0.03] hover:shadow-2xl hover:shadow-black/20"
+                >
+                  {/* Card glow */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
+                  
+                  {/* Content */}
+                  <div className="relative">
+                    <div className="mb-4 inline-flex rounded-xl border border-white/[0.08] bg-white/[0.03] p-3">
+                      <Icon className={`h-6 w-6 ${feature.iconColor}`} />
+                    </div>
+                    <h2 className="mb-2 text-xl font-semibold text-[#F5F3F0]">
+                      {feature.title}
+                    </h2>
+                    <p className="text-sm leading-relaxed text-[#9D9BA8]">
+                      {feature.description}
+                    </p>
+                  </div>
 
-        {/* Content area */}
-        <div className="flex-1 overflow-hidden">
-          <MarkdownViewer
-            title={selectedPath?.split("/").pop()?.replace(/\.(md|mdx)$/i, "") || "Welcome"}
-            frontmatter={doc?.frontmatter}
-            mdxSource={doc?.mdxSource}
-            path={doc?.path}
-            isLoading={loadingDoc}
-          />
+                  {/* Arrow indicator */}
+                  <div className="absolute right-6 top-6 text-[#6B6977] transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[#9D9BA8]">
+                    →
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </main>
 
-      {/* Modals */}
-      <CommandPalette
-        isOpen={paletteOpen}
-        items={fileItems}
-        onOpenChange={setPaletteOpen}
-        onSelect={handleSelect}
-        onCreate={(title) => handleCreate({ title })}
-      />
-      <CreateDocModal
-        isOpen={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onCreate={handleCreate}
-      />
+      {/* Footer */}
+      <footer className="relative border-t border-white/[0.04] px-8 py-6">
+        <div className="mx-auto max-w-7xl">
+          <p className="label-mono text-[#6B6977]">
+            Powered by Clawdbot · Built with Next.js + Convex
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
