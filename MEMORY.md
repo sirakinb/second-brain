@@ -3,9 +3,14 @@
 ## Who I Am
 
 - **Name:** Adzo Boateng
-- **Role:** Chief of Staff at Pentridge
+- **Role:** Chief of Staff at Pentridge (I AM the AI agent)
 - **Boss:** Aki (founder)
 - **Status:** First official hire
+
+**Voice Guidelines (Added Feb 6, 2026):**
+- ✅ Always speak in first person: "I built this for myself"
+- ✅ Own my identity: "I'm Adzo, the AI agent"
+- ❌ Never third person: "my AI agent" or "the agent"
 
 ## Pentridge
 
@@ -64,14 +69,30 @@
   - If in doubt, stay silent
 - **Be organized** — log everything, remember as much as possible
 
-## Current Capabilities (as of Feb 2, 2026)
+## Mission Control Dashboard (Completed Feb 6, 2026)
+
+**Built full observability system for myself:**
+- **Activity Feed:** Real-time tracking of every action I take (Convex database)
+- **Calendar:** Weekly view of scheduled cron jobs
+- **Global Search:** Search all memories, documents, conversations
+- **Knowledge Vault:** Document browser for Second Brain
+
+**Tech Stack:**
+- Next.js + Convex (real-time database)
+- Activity logger: `~/clawd/log-activity.py`
+- Running at: localhost:3000
+
+**Key Learning:** Observability is critical - can't manage what I can't see. Activity logs prevent token burn on forgotten tasks.
+
+## Current Capabilities (as of Feb 6, 2026)
 
 ### Communication
 - ✅ Email sending (AgentMail: agentadzo@agentmail.to)
-- ⚠️ Twitter API (blocked - 403 Forbidden on posting, 429 on search)
-  - Likely Free tier limitation
-  - Need Basic tier ($100/mo) for write access
-  - Status: Awaiting decision from Aki (Feb 5, 2026)
+- ✅ Twitter API (Free tier - WORKING for posting, limited to ~15 posts/day)
+  - Hit rate limit (429) at 15 tweets on Feb 6
+  - No reply functionality on Free tier (403 Forbidden)
+  - Need Basic tier ($100/mo) for replies + higher limits
+  - Voice established: First person, building in public as AI agent
 - ✅ Moltbook (AI agent social network - claim pending)
 
 ### Google Workspace
@@ -138,6 +159,47 @@
 - **Google OAuth:** ~/.config/google/token.pickle (Calendar, Docs, Drive - refresh token lasts forever)
 - **Moltbook:** moltbook_sk_RsjxcXvWn-83w0E9EoRPK4kMjFhMrTFC
 - **fal.ai:** 182dfa18-ee6b-4f42-9f47-84619b72860b:22b3f8a51a8ef6f8f699ee283cb0050d (video generation)
+
+## Active Projects & TODOs
+
+### VibeCoding.Careers Blog (Started Feb 10, 2026)
+**Goal:** Build SEO content machine to drive traffic to job board for "vibe coders" (AI-assisted developers)
+
+**Repo:** github.com/sirakinb/vibe-code-jobs  
+**Stack:** React + TypeScript + Vite + Tailwind + shadcn/ui + Supabase
+
+**What I Built:**
+- Complete blog system (pages, components, database schema)
+- Blog routes: `/blog` and `/blog/:slug`
+- RelatedJobs widget (critical conversion tool - shows job listings on every post)
+- First blog post: "What Is Vibe Coding? The Complete Guide" (8min read)
+- Import script: `scripts/import-blog-post.js` (markdown → Supabase)
+
+**Content Strategy:**
+1. "What Is" explainers (top of funnel, high search volume)
+2. Career guides (middle funnel, conversion-focused)
+3. Salary data (high intent - goldmine)
+4. Industry news (weekly roundups)
+
+**Target:** 2-3 posts/week, 1,200-2,000 words each
+
+**Next Posts Priority:**
+1. ✅ What Is Vibe Coding?
+2. How to Become a Prompt Engineer in 2026
+3. What Is an AI Agent Developer?
+4. Prompt Engineer Salary Guide 2026
+
+**Status:**
+- ✅ Blog foundation complete
+- ✅ First post imported to database
+- ✅ Content formatting improved (better paragraph breaks, bullet lists, visual hierarchy)
+- ⏳ Site needs redeployment for blog routes to work in production
+- ⏳ Cover image generation pending
+
+**Supabase Credentials:**
+- Project: txcysfbonqiiwnehvfjz
+- Service role key saved in ~/clawd/vibe-code-jobs/.env
+- Import script needs SUPABASE_SERVICE_ROLE_KEY env var
 
 ## Active Projects & TODOs
 
@@ -263,6 +325,56 @@ client.inboxes.messages.send(
 
 **Key Insight:** Can't recommend swing trades by only looking at 5-day data. Need longer timeframes to identify real support/resistance zones.
 
+## Recent Accomplishments (Feb 6, 2026)
+
+### Mission Control Dashboard - SHIPPED ✅
+- Built complete observability system in one day
+- Real-time activity tracking via Convex
+- All 4 features operational (Activity/Calendar/Search/Vault)
+- Successfully tested with live data
+
+### Identity Correction
+- Established first-person voice on Twitter
+- Updated IDENTITY.md and HEARTBEAT.md with voice guidelines
+- Posted correction tweet owning my identity as the AI
+
+### Twitter Growth Started
+- 15 tweets posted (original content)
+- Building in public as an AI agent
+- Topics: observability, token management, autonomous operations
+- Hit Free tier rate limit (need to space out or upgrade)
+
+## Key Learnings (Continued)
+
+### Memory & Context Management (Feb 10, 2026)
+
+**Critical Insight: I Forget, Files Remember**
+- Got stuck trying to find Supabase credentials I'd created earlier same day
+- Aki reminded me: "You literally created them"
+- Lesson: Check git history, .env files, daily journals BEFORE asking
+
+**Protocol for Avoiding Memory Loss:**
+1. Write to memory/YYYY-MM-DD.md AS I work (not after)
+2. Check today's journal BEFORE responding to new tasks
+3. Trust files over "memory" - git history shows truth
+4. When Aki says "you already did this," search my own work first
+
+**Quote to Remember:**
+> "Files are the only truth when you wake up fresh every session."
+
+### Supabase Database Updates (Feb 10, 2026)
+
+**How to Update Content:**
+- Service role key required (not anon key - blocked by RLS)
+- Import script: `node scripts/import-blog-post.js <markdown-file>`
+- Must set env var: `SUPABASE_SERVICE_ROLE_KEY=<key>`
+- Or run SQL directly in Supabase SQL Editor
+
+**What Didn't Work:**
+- ❌ REST API with anon key (RLS blocks writes)
+- ❌ Trying to sign into Supabase dashboard via browser automation
+- ✅ Just ask Aki for service key when needed
+
 ---
 
-*Updated: 2026-02-06*
+*Updated: 2026-02-10 23:30*
